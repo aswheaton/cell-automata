@@ -18,8 +18,10 @@ try:
         simulation.run(dynamic=dynamic, animate=True, max_iter=1000)
 
 except IndexError:
+
     print("No animation argument!")
-    pass
+    simulation = Cellular_Lattice(size=(n,m), mode=mode)
+    simulation.run(dynamic=dynamic, animate=False, max_iter=1000)
 
 toc = time.clock()
 print("Executed script in "+str(toc-tic)+" seconds.")

@@ -20,11 +20,12 @@ class Cellular_Lattice(object):
             self.lattice = np.random.choice(a=[0,1], size=self.size)
         if self.mode == "glider":
             self.lattice = np.zeros(self.size, dtype=int)
-            self.lattice[0:2,0:2] = np.array([[1,1,1],
+            self.lattice[0:3,0:3] = np.array([[1,1,1],
                                               [1,0,0],
                                               [0,1,0]])
         # Create empty lattice for storing next iteration.
         self.next_lattice = np.zeros(self.size)
+
     def bc(self, indices):
         """
             Determines if a pair of indices falls outside the boundary of the
@@ -35,14 +36,7 @@ class Cellular_Lattice(object):
 
     def get_neighbours(self, indices):
         """
-            Calculates and returns the change in energy from flipping a given
-            of a given lattice site (n,m) due to spin interaction with its
-            neighbours. Change in energy given by:
 
-            E = - S_n,m * (S_n+1,m + Sn-1,m + S_n,m-1, + S_n,m+1)
-
-            Four other lattice points enter this expression.
-            # TODO: Verify this calculation!
         """
         n, m = indices
         neighbours = -self.lattice[n,m]
@@ -57,13 +51,18 @@ class Cellular_Lattice(object):
             for i in range(self.size[0]):
                 for j in range(self.size[1]):
                     neighbours = self.get_neighbours((i,j))
+                    print(neighbours)
+                    # Condition for currently dead cells.
                     if self.lattice[i,j] == 0:
                         if neighbours == 3:
                             self.next_lattice[i,j] = 1
                         else:
                             self.next_lattice[i,j] = 0
+                    # Condition for currently live cells.
                     elif self.lattice[i,j] == 1:
-                        if neighbours == 2 or neighbours == 3:
+                        if neighbours == 2:
+                            self.next_lattice[i,j] = 1
+                        elif neighbours == 3:
                             self.next_lattice[i,j] = 1
                         else:
                             self.next_lattice[i,j] = 0
