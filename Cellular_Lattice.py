@@ -24,7 +24,7 @@ class Cellular_Lattice(object):
                                               [1,0,0],
                                               [0,1,0]])
         # Create empty lattice for storing next iteration.
-        self.next_lattice = np.zeros(self.size)
+        self.next_lattice = np.zeros(self.size, dtype=int)
 
     def bc(self, indices):
         """
@@ -39,35 +39,44 @@ class Cellular_Lattice(object):
 
         """
         n, m = indices
-        neighbours = -self.lattice[n,m]
+        neighbours = 0
         for i in [n-1, n, n+1]:
             for j in [m-1, m, m+1]:
-                neighbours += self.lattice[self.bc((i,j))]
+                if self.lattice[self.bc((i,j))] == 1:
+                    neighbours += 1
+        if self.lattice[n,m] == 1:
+            neighbours -= 1
         return(neighbours)
 
     def gen_next_lattice(self):
+
+        new_lattice = np.zeros(self.size, dtype=int)
 
         if self.dynamic == "conway":
             for i in range(self.size[0]):
                 for j in range(self.size[1]):
                     neighbours = self.get_neighbours((i,j))
-                    print(neighbours)
                     # Condition for currently dead cells.
                     if self.lattice[i,j] == 0:
                         if neighbours == 3:
                             self.next_lattice[i,j] = 1
+                            new_lattice[i,j] = 1
                         else:
                             self.next_lattice[i,j] = 0
+                            new_lattice[i,j] = 0
                     # Condition for currently live cells.
                     elif self.lattice[i,j] == 1:
-                        if neighbours == 2:
+                        if neighbours == 2 or neighbours == 3:
                             self.next_lattice[i,j] = 1
-                        elif neighbours == 3:
-                            self.next_lattice[i,j] = 1
+                            new_lattice[i,j] = 1
                         else:
                             self.next_lattice[i,j] = 0
+                            new_lattice[i,j] = 0
 
-        if self.dynamic == "sirs":
+        print(self.next_lattice == new_lattice)
+        return(new_lattice)
+
+        if self.dynamic == "SIRS":
             print("No SIRS code implemented yet!")
             pass
 
@@ -78,8 +87,8 @@ class Cellular_Lattice(object):
             # TODO: Make make number of attempted spin flips configurable!
             # TODO: Determine the purpose of the trailing comma in return().
         """
-        self.gen_next_lattice()
-        self.lattice = self.next_lattice
+
+        self.lattice = self.gen_next_lattice()
 
         if self.animate == True:
             self.image.set_array(self.lattice)
@@ -105,7 +114,7 @@ class Cellular_Lattice(object):
             self.animation = animation.FuncAnimation(self.figure, self.sweep,
                                                     frames=self.max_iter,
                                                     repeat=False,
-                                                    interval=1, blit=True
+                                                    interval=100, blit=False
                                                     )
             plt.show()
 

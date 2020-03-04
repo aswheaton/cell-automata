@@ -24,4 +24,4 @@ except IndexError:
     simulation.run(dynamic=dynamic, animate=False, max_iter=1000)
 
 toc = time.clock()
-print("Executed script in "+str(toc-tic)+" seconds.")
+print("Executed script in {} seconds.".format(toc-tic))
