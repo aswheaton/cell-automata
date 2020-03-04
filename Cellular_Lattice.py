@@ -73,14 +73,19 @@ class Cellular_Lattice(object):
                             self.next_lattice[i,j] = 0
                             new_lattice[i,j] = 0
 
-        print(self.next_lattice == new_lattice)
         return(new_lattice)
 
         if self.dynamic == "SIRS":
             print("No SIRS code implemented yet!")
             pass
 
-    def sweep(self, *args):
+    def weighted_mean_2D(self):
+        x_sum, y_sum = np.sum(self.lattice, axis=0), np.sum(self.lattice, axis=1)
+        x_avg = np.average(range(len(x_sum)), weights=x_sum)
+        y_avg = np.average(range(len(y_sum)), weights=y_sum)
+        return((x_avg, y_avg))
+
+    def step(self, *args):
         """
             Steps the simulation forward by attempting 1000 spin flips.
             Takes *args for call by animation.FuncAnimation instance.
@@ -111,7 +116,7 @@ class Cellular_Lattice(object):
             self.figure = plt.figure()
             self.image = plt.imshow(self.lattice, animated=True)
             # TODO: Make line wrapping PEP8 compliant, here.
-            self.animation = animation.FuncAnimation(self.figure, self.sweep,
+            self.animation = animation.FuncAnimation(self.figure, self.step,
                                                     frames=self.max_iter,
                                                     repeat=False,
                                                     interval=100, blit=False
@@ -119,14 +124,16 @@ class Cellular_Lattice(object):
             plt.show()
 
         elif kwargs.get("animate") == False:
-            f = open("dat/"+self.dynamic+"_"+str(self.temp)+".csv","w+")
-            for sweep in range(self.max_iter):
-                print("Sweep "+str(sweep)+" of "+str(self.max_iter)+" for T="+str(self.temp)+".", end="\r"),
-                self.sweep()
-                if sweep > 99 and sweep % 10 == 0:
-                    f.write(str(self.total_energy())+", "+str(self.magnetization())+"\n")
-            print("")
-            f.close()
+
+            for step in range(self.max_iter):
+                print("step {} of {}".format(step, self.max_iter), end="\r"),
+
+                self.step()
+                com = self.weighted_mean_2D()
+                print(com)
+                if step > 99 and step % 10 == 0:
+                    pass
+
 
 
     def exportAnimation(self, filename, dotsPerInch):
