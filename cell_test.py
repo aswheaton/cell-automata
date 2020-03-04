@@ -19,9 +19,16 @@ try:
 
 except IndexError:
 
-    print("No animation argument!")
-    simulation = Cellular_Lattice(size=(n,m), mode=mode)
-    simulation.run(dynamic=dynamic, animate=False, max_iter=1000)
+    print("No animation argument, writing data to files!")
 
+    if dynamic == "conway":
+        simulation = Cellular_Lattice(size=(n,m), mode=mode)
+        simulation.run(dynamic=dynamic, animate=False, max_iter=1000)
+
+    elif dynamic == "SIRS":
+        p1, p2, p3 = 0.5, 0.5, 0.5
+        simulation = Cellular_Lattice(size=(n,m), mode=mode)
+        simulation.run(dynamic=dynamic, animate=False, max_iter=1000,
+                       p1=p1, p2=p2, p3=p3)
 toc = time.clock()
 print("Executed script in {} seconds.".format(toc-tic))

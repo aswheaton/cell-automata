@@ -85,6 +85,18 @@ class Cellular_Lattice(object):
         y_avg = np.average(range(len(y_sum)), weights=y_sum)
         return((x_avg, y_avg))
 
+    def get_displacement(self, indices_a, indices_b):
+        displacement = ((indices_b[0]-indices_a[0])**2 +
+                        (indices_b[1]-indices_a[1])**2
+                        )**0.5
+        return(displacement)
+
+    def remove_outliers(self, data):
+        """
+            Removes data falling outside two standard deviation of a dataset.
+        """
+        return data[abs(data - np.mean(data)) < 2 * np.std(data)]
+
     def step(self, *args):
         """
             Steps the simulation forward by attempting 1000 spin flips.
@@ -112,10 +124,10 @@ class Cellular_Lattice(object):
         self.dynamic = kwargs.get("dynamic")
         self.max_iter = kwargs.get("max_iter")
         self.animate = kwargs.get("animate")
+
         if kwargs.get("animate") == True:
             self.figure = plt.figure()
             self.image = plt.imshow(self.lattice, animated=True)
-            # TODO: Make line wrapping PEP8 compliant, here.
             self.animation = animation.FuncAnimation(self.figure, self.step,
                                                     frames=self.max_iter,
                                                     repeat=False,
@@ -125,15 +137,21 @@ class Cellular_Lattice(object):
 
         elif kwargs.get("animate") == False:
 
+            com = np.zeros((self.max_iter, 2))
+            disp = np.zeros(self.max_iter)
+
+            com[0,:] = self.weighted_mean_2D()
+
             for step in range(self.max_iter):
-                print("step {} of {}".format(step, self.max_iter), end="\r"),
 
+                print("Step {} of {}".format(step, self.max_iter), end="\r"),
                 self.step()
-                com = self.weighted_mean_2D()
-                print(com)
-                if step > 99 and step % 10 == 0:
-                    pass
 
+                com[step,:] = self.weighted_mean_2D()
+                disp[step] = self.get_displacement(com[step-1,:], com[step,:])
+
+            print("Max displacement: {}".format(np.amax(disp)))
+            print("Mean displacement: {}".format(np.mean(self.remove_outliers(disp))))
 
 
     def exportAnimation(self, filename, dotsPerInch):
