@@ -23,8 +23,6 @@ class Cellular_Lattice(object):
             self.lattice[0:3,0:3] = np.array([[1,1,1],
                                               [1,0,0],
                                               [0,1,0]])
-        # Create empty lattice for storing next iteration.
-        self.next_lattice = np.zeros(self.size, dtype=int)
 
     def bc(self, indices):
         """
@@ -59,18 +57,14 @@ class Cellular_Lattice(object):
                     # Condition for currently dead cells.
                     if self.lattice[i,j] == 0:
                         if neighbours == 3:
-                            self.next_lattice[i,j] = 1
                             new_lattice[i,j] = 1
                         else:
-                            self.next_lattice[i,j] = 0
                             new_lattice[i,j] = 0
                     # Condition for currently live cells.
                     elif self.lattice[i,j] == 1:
                         if neighbours == 2 or neighbours == 3:
-                            self.next_lattice[i,j] = 1
                             new_lattice[i,j] = 1
                         else:
-                            self.next_lattice[i,j] = 0
                             new_lattice[i,j] = 0
 
         return(new_lattice)
