@@ -31,17 +31,23 @@ class SIRS_Lattice(object):
 
     def get_neighbours(self, indices, **kwargs):
         """
-
+            Find and return the number of nearest neighbours around the lattice
+            site (i,j) matching "id".
         """
-        n, m = indices
+        i, j = indices
         id = kwargs.get("id")
+
         neighbours = 0
-        for i in [n-1, n, n+1]:
-            for j in [m-1, m, m+1]:
-                if self.lattice[self.bc((i,j))] == id:
-                    neighbours += 1
-        if self.lattice[n,m] == id:
-            neighbours -= 1
+
+        if self.lattice[self.bc((i-1,j))] == id:
+            neighbours += 1
+        if self.lattice[self.bc((i+1,j))] == id:
+            neighbours += 1
+        if self.lattice[self.bc((i,j-1))] == id:
+            neighbours += 1
+        if self.lattice[self.bc((i,j+1))] == id:
+            neighbours += 1
+
         return(neighbours)
 
     def gen_next_lattice(self):
@@ -52,8 +58,6 @@ class SIRS_Lattice(object):
             pass
 
         if self.dynamic == "SIRS":
-            # Create new lattice for next sweep.
-            new_lattice = self.lattice
             # Attempt to evolve N^2 sites on the lattice.
             for step in range(self.size[0] * self.size[1]):
                 # Select a random site on the lattice.
@@ -61,25 +65,17 @@ class SIRS_Lattice(object):
                 j = np.random.randint(0, self.size[1])
                 # Condition for susceptible state.
                 if self.lattice[i,j] == -1:
-                    if self.get_neighbours((i,j), id=0):
+                    if self.get_neighbours((i,j), id=0) != 0:
                         if np.random.rand() < self.p1:
-                            new_lattice[i,j] = 0
-                        else:
-                            new_lattice[i,j] = -1
+                            self.lattice[i,j] = 0
                 # Condition for infected state.
                 if self.lattice[i,j] == 0:
                     if np.random.rand() < self.p2:
-                        new_lattice[i,j] = 1
-                    else:
-                        new_lattice[i,j] = 0
+                        self.lattice[i,j] = 1
                 # Condition for recovered state.
                 if self.lattice[i,j] == 1:
                     if np.random.rand() < self.p3:
-                        new_lattice[i,j] = -1
-                    else:
-                        new_lattice[i,j] = 1
-
-        return(new_lattice)
+                        self.lattice[i,j] = -1
 
     def step(self, *args):
         """
@@ -89,7 +85,7 @@ class SIRS_Lattice(object):
             # TODO: Determine the purpose of the trailing comma in return().
         """
 
-        self.lattice = self.gen_next_lattice()
+        self.gen_next_lattice()
 
         if self.animate == True:
             self.image.set_array(self.lattice)
