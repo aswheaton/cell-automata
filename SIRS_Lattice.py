@@ -69,11 +69,11 @@ class SIRS_Lattice(object):
                         if np.random.rand() < self.p1:
                             self.lattice[i,j] = 0
                 # Condition for infected state.
-                if self.lattice[i,j] == 0:
+                elif self.lattice[i,j] == 0:
                     if np.random.rand() < self.p2:
                         self.lattice[i,j] = 1
                 # Condition for recovered state.
-                if self.lattice[i,j] == 1:
+                elif self.lattice[i,j] == 1:
                     if np.random.rand() < self.p3:
                         self.lattice[i,j] = -1
 

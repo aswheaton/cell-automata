@@ -22,7 +22,7 @@ try:
             simulation.run(dynamic=dynamic, animate=True, max_iter=1000)
 
         if dynamic == "SIRS":
-            p1, p2, p3 = 0.5, 0.5, 0.5
+            p1, p2, p3 = 0.8, 0.1, 0.01
             simulation = SIRS_Lattice(size=(n,m), mode=mode)
             simulation.run(dynamic=dynamic, animate=True, max_iter=1000,
                            p1=p1, p2=p2, p3=p3)
