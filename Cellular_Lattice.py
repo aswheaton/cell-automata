@@ -139,6 +139,7 @@ class Cellular_Lattice(object):
 
             com = np.zeros((self.max_iter, 2))
             disp = np.zeros(self.max_iter)
+            live_cells = np.zeros(self.max_iter)
 
             com[0,:] = self.weighted_mean_2D()
 
@@ -149,10 +150,17 @@ class Cellular_Lattice(object):
 
                 com[step,:] = self.weighted_mean_2D()
                 disp[step] = self.get_displacement(com[step-1,:], com[step,:])
+                live_cells[step] = np.sum(self.lattice, dtype=int)
+
+                if (live_cells[step] == live_cells[step-1]) and (live_cells[step-1] == live_cells[step-2]):
+                    print(live_cells)
+                    print("Equilibrium reached at step {}!".format(step))
+                    break
 
             print("Max displacement: {}".format(np.amax(disp)))
             print("Mean displacement: {}".format(np.mean(self.remove_outliers(disp))))
 
+            return(step)
 
     def exportAnimation(self, filename, dotsPerInch):
         """

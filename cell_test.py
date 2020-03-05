@@ -22,8 +22,13 @@ except IndexError:
     print("No animation argument, writing data to files!")
 
     if dynamic == "conway":
-        simulation = Cellular_Lattice(size=(n,m), mode=mode)
-        simulation.run(dynamic=dynamic, animate=False, max_iter=1000)
+
+        equilibrium_steps = []
+        for i in range(1000):
+            simulation = Cellular_Lattice(size=(n,m), mode=mode)
+            equilibrium_steps.append(simulation.run(dynamic=dynamic, animate=False, max_iter=1000))
+        plt.hist(equilibrium_steps)
+        plt.savefig("equilibrium_hist.png")
 
     elif dynamic == "SIRS":
         p1, p2, p3 = 0.5, 0.5, 0.5
