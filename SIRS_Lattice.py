@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-class Cellular_Lattice(object):
+class SIRS_Lattice(object):
 
     def __init__(self, **kwargs):
         self.size = kwargs.get("size")
@@ -17,12 +17,7 @@ class Cellular_Lattice(object):
             values, depending on the user specified mode.
         """
         if self.mode == "random":
-            self.lattice = np.random.choice(a=[0,1], size=self.size)
-        if self.mode == "glider":
-            self.lattice = np.zeros(self.size, dtype=int)
-            self.lattice[0:3,0:3] = np.array([[1,1,1],
-                                              [1,0,0],
-                                              [0,1,0]])
+            self.lattice = np.random.choice(a=[-1,0,1], size=self.size)
         # Create empty lattice for storing next iteration.
         self.next_lattice = np.zeros(self.size, dtype=int)
 
@@ -34,68 +29,57 @@ class Cellular_Lattice(object):
         """
         return((indices[0]%self.size[0], indices[1]%self.size[1]))
 
-    def get_neighbours(self, indices):
+    def get_neighbours(self, indices, **kwargs):
         """
 
         """
         n, m = indices
+        id = kwargs.get("id")
         neighbours = 0
         for i in [n-1, n, n+1]:
             for j in [m-1, m, m+1]:
-                if self.lattice[self.bc((i,j))] == 1:
+                if self.lattice[self.bc((i,j))] == id:
                     neighbours += 1
-        if self.lattice[n,m] == 1:
+        if self.lattice[n,m] == id:
             neighbours -= 1
         return(neighbours)
 
     def gen_next_lattice(self):
 
-        new_lattice = np.zeros(self.size, dtype=int)
-
         if self.dynamic == "conway":
-            for i in range(self.size[0]):
-                for j in range(self.size[1]):
-                    neighbours = self.get_neighbours((i,j))
-                    # Condition for currently dead cells.
-                    if self.lattice[i,j] == 0:
-                        if neighbours == 3:
-                            self.next_lattice[i,j] = 1
-                            new_lattice[i,j] = 1
-                        else:
-                            self.next_lattice[i,j] = 0
-                            new_lattice[i,j] = 0
-                    # Condition for currently live cells.
-                    elif self.lattice[i,j] == 1:
-                        if neighbours == 2 or neighbours == 3:
-                            self.next_lattice[i,j] = 1
-                            new_lattice[i,j] = 1
-                        else:
-                            self.next_lattice[i,j] = 0
-                            new_lattice[i,j] = 0
-
-        return(new_lattice)
-
-        if self.dynamic == "SIRS":
-            print("No SIRS code implemented yet!")
+            new_lattice = np.zeros(self.size, dtype=int)
+            print("No Game of Life code implemented yet!")
             pass
 
-    def weighted_mean_2D(self):
-        x_sum, y_sum = np.sum(self.lattice, axis=0), np.sum(self.lattice, axis=1)
-        x_avg = np.average(range(len(x_sum)), weights=x_sum)
-        y_avg = np.average(range(len(y_sum)), weights=y_sum)
-        return((x_avg, y_avg))
+        if self.dynamic == "SIRS":
+            # Create new lattice for next sweep.
+            new_lattice = self.lattice
+            # Attempt to evolve N^2 sites on the lattice.
+            for step in range(self.size[0] * self.size[1]):
+                # Select a random site on the lattice.
+                i = np.random.randint(0, self.size[0])
+                j = np.random.randint(0, self.size[1])
+                # Condition for susceptible state.
+                if self.lattice[i,j] == -1:
+                    if self.get_neighbours((i,j), id=0):
+                        if np.random.rand() < self.p1:
+                            new_lattice[i,j] = 0
+                        else:
+                            new_lattice[i,j] = -1
+                # Condition for infected state.
+                if self.lattice[i,j] == 0:
+                    if np.random.rand() < self.p2:
+                        new_lattice[i,j] = 1
+                    else:
+                        new_lattice[i,j] = 0
+                # Condition for recovered state.
+                if self.lattice[i,j] == 1:
+                    if np.random.rand() < self.p3:
+                        new_lattice[i,j] = -1
+                    else:
+                        new_lattice[i,j] = 1
 
-    def get_displacement(self, indices_a, indices_b):
-        displacement = ((indices_b[0]-indices_a[0])**2 +
-                        (indices_b[1]-indices_a[1])**2
-                        )**0.5
-        return(displacement)
-
-    def remove_outliers(self, data):
-        """
-            Removes data falling outside two standard deviation of a dataset.
-        """
-        return data[abs(data - np.mean(data)) < 2 * np.std(data)]
+        return(new_lattice)
 
     def step(self, *args):
         """
@@ -124,6 +108,7 @@ class Cellular_Lattice(object):
         self.dynamic = kwargs.get("dynamic")
         self.max_iter = kwargs.get("max_iter")
         self.animate = kwargs.get("animate")
+        self.p1, self.p2, self.p3 = kwargs.get("p1"), kwargs.get("p2"), kwargs.get("p3")
 
         if kwargs.get("animate") == True:
             self.figure = plt.figure()
@@ -137,29 +122,9 @@ class Cellular_Lattice(object):
 
         elif kwargs.get("animate") == False:
 
-            com = np.zeros((self.max_iter, 2))
-            disp = np.zeros(self.max_iter)
-            live_cells = np.zeros(self.max_iter)
-
-            com[0,:] = self.weighted_mean_2D()
-
             for step in range(self.max_iter):
-
                 print("Step {} of {}".format(step, self.max_iter), end="\r"),
                 self.step()
-
-                com[step,:] = self.weighted_mean_2D()
-                disp[step] = self.get_displacement(com[step-1,:], com[step,:])
-                live_cells[step] = np.sum(self.lattice, dtype=int)
-
-                if (live_cells[step] == live_cells[step-1]) and (live_cells[step-1] == live_cells[step-2]):
-                    print("\nEquilibrium reached at step {}!".format(step))
-                    break
-
-            print("Max displacement: {}".format(np.amax(disp)))
-            print("Mean displacement: {}".format(np.mean(self.remove_outliers(disp))))
-
-            return(step)
 
     def exportAnimation(self, filename, dotsPerInch):
         """
