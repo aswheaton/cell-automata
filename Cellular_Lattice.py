@@ -20,8 +20,19 @@ class Cellular_Lattice(object):
             self.lattice = np.random.choice(a=[0,1], size=self.size)
         if self.mode == "glider":
             self.lattice = np.zeros(self.size, dtype=int)
-            self.lattice[0:3,0:3] = np.array([[1,1,1],
-                                              [1,0,0],
+            self.lattice[25:28,25:28] = np.array([[1,1,1],
+                                                  [1,0,0],
+                                                  [0,1,0]])
+        if self.mode == "beehive":
+            self.lattice = np.zeros(self.size, dtype=int)
+            self.lattice[25:29,25:28] = np.array([[0,1,0],
+                                                [1,0,1],
+                                                [1,0,1],
+                                                [0,1,0]])
+        if self.mode == "blinker":
+            self.lattice = np.zeros(self.size, dtype=int)
+            self.lattice[25:28,25:28] = np.array([[0,1,0],
+                                              [0,1,0],
                                               [0,1,0]])
 
     def bc(self, indices):
@@ -146,12 +157,12 @@ class Cellular_Lattice(object):
                 disp[step] = self.get_displacement(com[step-1,:], com[step,:])
                 live_cells[step] = np.sum(self.lattice, dtype=int)
 
-                if (live_cells[step] == live_cells[step-1]) and (live_cells[step-1] == live_cells[step-2]):
-                    print("\nEquilibrium reached at step {}!".format(step))
-                    break
+                # if (live_cells[step] == live_cells[step-1]) and (live_cells[step-1] == live_cells[step-2]):
+                #     print("\nEquilibrium reached at step {}!".format(step))
+                #     break
 
             print("Max displacement: {}".format(np.amax(disp)))
-            print("Mean displacement: {}".format(np.mean(self.remove_outliers(disp))))
+            print("Mean displacement: {}".format(np.mean(self.remove_outliers(disp[:step]))))
 
             return(step)
 

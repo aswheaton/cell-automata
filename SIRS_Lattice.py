@@ -84,6 +84,14 @@ class SIRS_Lattice(object):
                     if np.random.rand() < self.p3:
                         self.lattice[i,j] = -1
 
+    def get_infected(self):
+        infected_total = 0
+        for i in range(self.size[0]):
+            for j in range(self.size[1]):
+                if self.lattice[i,j] == 0:
+                    infected_total += 1
+        return(infected_total)
+
     def sweep(self, *args):
         """
             Steps the simulation forward by attempting 1000 spin flips.
@@ -111,13 +119,14 @@ class SIRS_Lattice(object):
 
         self.max_iter = kwargs.get("max_iter")
 
-        if kwargs.get("animate") == True:
+        if self.animate == True:
+            print("world")
             self.figure = plt.figure()
             self.image = plt.imshow(self.lattice, animated=True)
             self.animation = animation.FuncAnimation(self.figure, self.sweep,
                                                     frames=self.max_iter,
                                                     repeat=False,
-                                                    interval=100, blit=False
+                                                    interval=200, blit=False
                                                     )
             plt.show()
 
