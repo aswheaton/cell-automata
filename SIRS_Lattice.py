@@ -7,8 +7,17 @@ import matplotlib.animation as animation
 class SIRS_Lattice(object):
 
     def __init__(self, **kwargs):
+
         self.size = kwargs.get("size")
         self.mode = kwargs.get("mode")
+        self.dynamic = kwargs.get("dynamic")
+        self.animate = kwargs.get("animate")
+
+        if self.dynamic == "SIRS":
+            self.p1 = kwargs.get("p1")
+            self.p2 = kwargs.get("p2")
+            self.p3 = kwargs.get("p3")
+
         self.build()
 
     def build(self):
@@ -18,8 +27,6 @@ class SIRS_Lattice(object):
         """
         if self.mode == "random":
             self.lattice = np.random.choice(a=[-1,0,1], size=self.size)
-        # Create empty lattice for storing next iteration.
-        self.next_lattice = np.zeros(self.size, dtype=int)
 
     def bc(self, indices):
         """
@@ -77,7 +84,7 @@ class SIRS_Lattice(object):
                     if np.random.rand() < self.p3:
                         self.lattice[i,j] = -1
 
-    def step(self, *args):
+    def sweep(self, *args):
         """
             Steps the simulation forward by attempting 1000 spin flips.
             Takes *args for call by animation.FuncAnimation instance.
@@ -101,15 +108,13 @@ class SIRS_Lattice(object):
             (Currently number of attempted flips is more than those specified by
             the user by a factor of 10^3 due to the way animate() method works.)
         """
-        self.dynamic = kwargs.get("dynamic")
+
         self.max_iter = kwargs.get("max_iter")
-        self.animate = kwargs.get("animate")
-        self.p1, self.p2, self.p3 = kwargs.get("p1"), kwargs.get("p2"), kwargs.get("p3")
 
         if kwargs.get("animate") == True:
             self.figure = plt.figure()
             self.image = plt.imshow(self.lattice, animated=True)
-            self.animation = animation.FuncAnimation(self.figure, self.step,
+            self.animation = animation.FuncAnimation(self.figure, self.sweep,
                                                     frames=self.max_iter,
                                                     repeat=False,
                                                     interval=100, blit=False

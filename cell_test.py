@@ -21,17 +21,20 @@ if sys.argv[5] == "animate":
 
     if dynamic == "SIRS":
         p1, p2, p3 = 0.8, 0.1, 0.01
-        simulation = SIRS_Lattice(size=(n,m), mode=mode)
-        simulation.run(dynamic=dynamic, animate=True, max_iter=1000,
-                       p1=p1, p2=p2, p3=p3)
+        simulation = SIRS_Lattice(size=(n,m), mode=mode,dynamic=dynamic,
+                                  animate=True, max_iter=1000,p1=p1, p2=p2,
+                                  p3=p3)
+        simulation.run(max_iter=1000)
 
 if sys.argv[5] == "histogram"
 
     equilibrium_steps = []
     for i in range(100):
         simulation = Cellular_Lattice(size=(n,m), mode=mode)
-        equilibrium_steps.append(simulation.run(dynamic=dynamic, animate=False, max_iter=1000))
+        equilibrium_steps.append(simulation.run(dynamic=dynamic, animate=False, max_iter=10000))
     plt.hist(equilibrium_steps)
+    plt.xlabel("Sweeps to Equilibrium")
+    plt.xlabel("Frequency")
     plt.savefig("plots/equilibrium_hist.png")
 
 if sys.argv[5] == "phase":
@@ -47,8 +50,7 @@ if sys.argv[5] == "phase":
 
     for p1 in p1s:
         for p3 in p32:
-            simulation = SIRS_Lattice(size=(n,m), mode=mode)
-            simulation.run(dynamic=dynamic, animate=False, max_iter=1000, p1=p1, p2=p2, p3=p3)
+            simulation = SIRS_Lattice(size=(n,m), mode=mode, dynamic=dynamic, animate=False, p1=p1, p2=p2, p3=p3)
             psis = []
             for sweep in range(1000):
                 simulation.sweep()
@@ -62,14 +64,13 @@ if sys.argv[5] == "phase":
             # Store the average infected fraction.
             phase_matrix[p1_index,p3_index] = np.mean(psis)/(n*m)
             var_matrix[p1_index,p3_index] = np.var(psis)/(n*m)
-
             # Write out relevant information.
             np.savetext(psis, "data/phase/psis_p1={}_p3={}.csv".format(p1,p3), delimiter=" ")
 
     # Write out the matrices.
     np.savetext(phase_matrix, "data/phase/phase_matrix.csv", delimiter=" ")
     np.savetext(var_matrix, "data/phase/var_matrix.csv", delimiter=" ")
-
+    # Plot the phase diagram.
     plt.imshow(phase_matrix, origin='lower', cmap='viridis')
     plt.colorbar()
     plt.xlabel("p1 (S -> I)")
@@ -77,7 +78,7 @@ if sys.argv[5] == "phase":
     plt.title("Average Infected Fraction in p1-p3 Phase Space")
     plt.savefig("plots/phase_diagram.png")
     plt.clf()
-
+    # Plot the variance in phase space.
     plt.imshow(var_matrix, origin='lower', cmap='viridis')
     plt.colorbar()
     plt.xlabel("p1 (S -> I)")
