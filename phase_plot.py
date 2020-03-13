@@ -30,8 +30,8 @@ def main():
     plt.xlabel("p1 (S -> I)")
     plt.ylabel("p3 (R -> S)")
     plt.title("Average Infected Fraction in p1-p3 Phase Space")
+    plt.savefig("plots/phase_diagram.png")
     plt.show()
-    plt.savefig("phase_diagram.png")
     plt.clf()
     # Plot the variance in phase space.
     plt.pcolormesh(p1s, p3s, var_matrix.T, cmap='viridis')
@@ -39,7 +39,7 @@ def main():
     plt.xlabel("p1 (S -> I)")
     plt.ylabel("p3 (R -> S)")
     plt.title("Variance of Infected Sites in p1-p3 Phase Space")
+    plt.savefig("plots/variance_diagram.png")
     plt.show()
-    plt.savefig("variance_diagram.png")
     plt.clf()
 main()
