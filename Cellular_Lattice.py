@@ -163,7 +163,7 @@ class Cellular_Lattice(object):
                         break
 
             if self.mode == "glider":
-                print("\n")
+                print()
                 print("Max displacement: {}".format(np.amax(self.disp)))
                 print("Mean displacement: {}".format(np.mean(self.remove_outliers(self.disp[:step]))))
 

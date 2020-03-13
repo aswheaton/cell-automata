@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 # Size of the lattice.
 n, m = 50, 50
 # Initialise immunity domain.
@@ -9,20 +10,30 @@ p1, p2, p3 = 0.5, 0.5, 0.5
 inf_frac = np.zeros(immune_fracs.shape)
 inf_frac_err = np.zeros(immune_fracs.shape)
 
-for immune_frac in immune_fracs:
-    # Get the infected fraction and an error for a value of immunity fraction.
-    avg_inf_fracs = []
-    for sim in range(5):
-        print("Loading simulation {} of 5 for frac={}.".format(sim, immune_frac), end="\r"),
-        psis = np.loadtxt("data/immunity/tot_inf_frac={}_sim{}.csv".format(immune_frac,sim), delimiter=" ")
-        # Collect the average infected fraction for this run.
-        avg_inf_fracs.append(np.mean(psis)/(n*m))
+# for immune_frac in immune_fracs:
+#     # Get the infected fraction and an error for a value of immunity fraction.
+#     avg_inf_fracs = []
+#     for sim in range(5):
+#         print("Loading simulation {} of 5 for frac={}.".format(sim, immune_frac), end="\r"),
+#         psis = np.loadtxt("data/immunity/psis_frac={}_sim{}.csv".format(immune_frac,sim), delimiter=" ")
+#         # Collect the average infected fraction for this run.
+#         avg_inf_fracs.append(np.mean(psis)/(n*m))
+#
+#     # Get a mean and standard error for plotting.
+#     index = np.where(immune_fracs == immune_frac)
+#     inf_frac[index] = np.mean(avg_inf_fracs)
+#     inf_frac_err[index] = np.std(avg_inf_fracs) / len(avg_inf_fracs)**0.5
+#
+# # Write out the infected fraction and errors.
+# immune_frac_data = np.stack((immune_fracs, inf_frac, inf_frac_err), axis=-1)
+# np.savetxt("data/immunity/inf_frac_immune_frac.csv", immune_frac_data, delimiter=" ")
 
-    # Get a mean and standard error for plotting.
-    index = np.where(immune_fracs == immune_frac)
-    inf_frac[index] = np.mean(avg_inf_fracs)
-    inf_frac_err[index] = np.std(avg_inf_fracs) / len(avg_inf_fracs)**0.5
+inf_frac =  np.loadtxt("archive/tot_inf_frac=0.47000000000000003_sim4.csv")
 
-# Write out the infected fraction and errors.
-immune_frac_data = np.stack((immune_fracs, inf_frac, inf_frac_err), axis=-1)
-np.savetxt("data/immunity/inf_frac_immune_frac.csv", immune_frac_data, delimiter=" ")
+# Plot slice in phase space with errors.
+plt.errorbar(immune_fracs, inf_frac, yerr=inf_frac_err, elinewidth=1, capsize=3, barsabove=True)
+plt.xlabel("Immunity Fraction")
+plt.ylabel("Average Infected Fraction")
+plt.title("Average Infected Fraction vs. Immunity Fraction")
+plt.savefig("plots/immunity_diagram.png")
+plt.clf()

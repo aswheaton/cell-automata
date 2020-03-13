@@ -91,7 +91,7 @@ if sys.argv[5] == "phase":
     np.savetxt("data/phase/phase_matrix.csv", phase_matrix, delimiter=" ")
     np.savetxt("data/phase/phase_variance_matrix.csv", var_matrix, delimiter=" ")
     # Plot the phase diagram.
-    plt.pcolormesh(p1s, p3s, phase_matrix.T,  cmap='viridis')
+    plt.imshow(phase_matrix.T, extent=[p1s[0],p1s[-1],p3s[0],p3s[-1]], cmap='viridis')
     plt.colorbar()
     plt.xlabel("p1 (S -> I)")
     plt.ylabel("p3 (R -> S)")
@@ -99,7 +99,7 @@ if sys.argv[5] == "phase":
     plt.savefig("phase_diagram.png")
     plt.clf()
     # Plot the variance in phase space.
-    plt.pcolormesh(p1s, p3s, var_matrix.T, cmap='viridis')
+    plt.imshow(var_matrix.T, extent=[p1s[0],p1s[-1],p3s[0],p3s[-1]], cmap='viridis')
     plt.colorbar()
     plt.xlabel("p1 (S -> I)")
     plt.ylabel("p3 (R -> S)")
