@@ -26,22 +26,31 @@ if sys.argv[5] == "animate":
 
     if dynamic == "conway":
         simulation = Cellular_Lattice(size=(n,m), mode=mode)
-        simulation.run(dynamic=dynamic, animate=False, max_iter=1000)
+        simulation.run(dynamic=dynamic, animate=True, max_iter=1000)
 
     if dynamic == "SIRS":
-        print("hello")
         p1, p2, p3 = 0.8, 0.1, 0.01
         simulation = SIRS_Lattice(size=(n,m), mode=mode,dynamic=dynamic,
                                   animate=True, max_iter=1000,p1=p1, p2=p2,
                                   p3=p3)
         simulation.run(max_iter=1000)
 
+if sys.argv[5] == "speed":
+
+    if dynamic == "conway":
+        simulation = Cellular_Lattice(size=(n,m), mode=mode)
+        simulation.run(dynamic=dynamic, animate=False, max_iter=1000)
+
 if sys.argv[5] == "histogram":
 
     equilibrium_steps = []
     for i in range(100):
+        print("\nRunning simulation {} of {}".format(i, 100))
         simulation = Cellular_Lattice(size=(n,m), mode=mode)
         equilibrium_steps.append(simulation.run(dynamic=dynamic, animate=False, max_iter=10000))
+    # Write the steps to equilibrium for each simulation out to a file.
+    np.savetxt("data/hist/sweeps_to_equ.csv", np.array(equilibrium_steps), delimiter=" ")
+    # Plot a bin histogram of the steps to equilibrium and write it to a file.
     plt.hist(equilibrium_steps, bins=15)
     plt.xlabel("Sweeps to Equilibrium")
     plt.ylabel("Frequency")
@@ -120,11 +129,11 @@ if sys.argv[5] == "slice":
         psis = np.array(psis)
         # Get the phase-space location index.
         p1_index = np.where(p1s==p1)
-        # Store the average infected fraction and errors.
+        # Store the variance of the average infected fraction and errors.
         variance[p1_index] = np.var(psis)/(n*m)
         variance_err[p1_index] = bootstrap_error(psis, np.var)/(n*m)
 
-        # Write out the psis for the particular value of p1..
+        # Write out the psis for the particular value of p1.
         np.savetxt("data/slice/psis_p1={}.csv".format(p1), psis, delimiter=" ")
         # Plot slice in phase space with errors.
         plt.errorbar(p1s, variance, yerr=variance_err, elinewidth=1, capsize=3, barsabove=True)
@@ -135,8 +144,8 @@ if sys.argv[5] == "slice":
         plt.clf()
 
     # Write out the variance of the infected fraction and error on the variance.
-    np.savetxt("data/slice/variance.csv", inf_frac, delimiter=" ")
-    np.savetxt("data/slice/variance_err.csv", inf_frac_err, delimiter=" ")
+    variance_data = np.stack((p1s, variance, variance_err), axis=-1)
+    np.savetxt("data/slice/variance.csv", variance_data, delimiter=" ")
 
 if sys.argv[5] == "immunity":
 
@@ -182,6 +191,9 @@ if sys.argv[5] == "immunity":
     plt.title("Average Infected Fraction vs. Immunity Fraction")
     plt.savefig("plots/immunity_diagram.png")
     plt.clf()
+    # Write out the infected fraction and errors.
+    immune_frac_data = np.stack((immune_fracs, inf_frac, inf_frac_err), axis=-1)
+    np.savetxt("data/immunity/immune_frac.csv", immune_frac_data, delimiter=" ")
 
 toc = time.clock()
-print("\nExecuted script in {} seconds.".format(toc-tic))
+print("Executed script in {} seconds.".format(toc-tic))

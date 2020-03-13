@@ -120,13 +120,12 @@ class SIRS_Lattice(object):
         self.max_iter = kwargs.get("max_iter")
 
         if self.animate == True:
-            print("world")
             self.figure = plt.figure()
             self.image = plt.imshow(self.lattice, animated=True)
             self.animation = animation.FuncAnimation(self.figure, self.sweep,
                                                     frames=self.max_iter,
                                                     repeat=False,
-                                                    interval=200, blit=False
+                                                    interval=100, blit=False
                                                     )
             plt.show()
 

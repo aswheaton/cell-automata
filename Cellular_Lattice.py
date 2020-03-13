@@ -13,8 +13,8 @@ class Cellular_Lattice(object):
 
     def build(self):
         """
-            Creates a new class attribute of type ndarray and fills it with cell
-            values, depending on the user specified mode.
+        Creates a new class attribute of type ndarray and fills it with cell
+        values, depending on the user specified mode.
         """
         if self.mode == "random":
             self.lattice = np.random.choice(a=[0,1], size=self.size)
@@ -37,9 +37,9 @@ class Cellular_Lattice(object):
 
     def bc(self, indices):
         """
-            Determines if a pair of indices falls outside the boundary of the
-            lattice and if so, applies a periodic (toroidal) boundary condition
-            to return new indices.
+        Determines if a pair of indices falls outside the boundary of the
+        lattice and if so, applies a periodic (toroidal) boundary condition
+        to return new indices.
         """
         return((indices[0]%self.size[0], indices[1]%self.size[1]))
 
@@ -98,16 +98,16 @@ class Cellular_Lattice(object):
 
     def remove_outliers(self, data):
         """
-            Removes data falling outside two standard deviation of a dataset.
+        Removes data falling outside two standard deviation of a dataset.
         """
         return data[abs(data - np.mean(data)) < 2 * np.std(data)]
 
     def step(self, *args):
         """
-            Steps the simulation forward by attempting 1000 spin flips.
-            Takes *args for call by animation.FuncAnimation instance.
-            # TODO: Make make number of attempted spin flips configurable!
-            # TODO: Determine the purpose of the trailing comma in return().
+        Steps the simulation forward by attempting 1000 spin flips.
+        Takes *args for call by animation.FuncAnimation instance.
+        # TODO: Make make number of attempted spin flips configurable!
+        # TODO: Determine the purpose of the trailing comma in return().
         """
 
         self.lattice = self.gen_next_lattice()
@@ -118,59 +118,62 @@ class Cellular_Lattice(object):
 
     def run(self, **kwargs):
         """
-            Sets up a figure, image, and FuncAnimation instance, then runs the
-            simulation to the specified maximum number of iterations.
-            # TODO: Utilise the Boolean animate attribute here, and implement
-            datafile output.
-            # TODO: Make the number of Metropolis trials more understandable.
-            (Currently number of attempted flips is more than those specified by
-            the user by a factor of 10^3 due to the way animate() method works.)
+        Sets up a figure, image, and FuncAnimation instance, then runs the
+        simulation to the specified maximum number of iterations.
+        # TODO: Utilise the Boolean animate attribute here, and implement
+        datafile output.
+        # TODO: Make the number of Metropolis trials more understandable.
+        (Currently number of attempted flips is more than those specified by
+        the user by a factor of 10^3 due to the way animate() method works.)
         """
         self.dynamic = kwargs.get("dynamic")
         self.max_iter = kwargs.get("max_iter")
         self.animate = kwargs.get("animate")
 
-        if kwargs.get("animate") == True:
+        if self.animate == True:
             self.figure = plt.figure()
             self.image = plt.imshow(self.lattice, animated=True)
             self.animation = animation.FuncAnimation(self.figure, self.step,
                                                     frames=self.max_iter,
                                                     repeat=False,
-                                                    interval=100, blit=False
+                                                    interval=50, blit=False
                                                     )
             plt.show()
 
-        elif kwargs.get("animate") == False:
+        elif self.animate == False:
 
-            com = np.zeros((self.max_iter, 2))
-            disp = np.zeros(self.max_iter)
-            live_cells = np.zeros(self.max_iter)
+            self.com = np.zeros((self.max_iter, 2))
+            self.disp = np.zeros(self.max_iter)
+            self.live_cells = np.zeros(self.max_iter)
 
-            com[0,:] = self.weighted_mean_2D()
+            self.com[0,:] = self.weighted_mean_2D()
 
             for step in range(self.max_iter):
 
                 print("Step {} of {}".format(step, self.max_iter), end="\r"),
                 self.step()
 
-                com[step,:] = self.weighted_mean_2D()
-                disp[step] = self.get_displacement(com[step-1,:], com[step,:])
-                live_cells[step] = np.sum(self.lattice, dtype=int)
+                self.com[step,:] = self.weighted_mean_2D()
+                self.disp[step] = self.get_displacement(self.com[step-1,:], self.com[step,:])
+                self.live_cells[step] = np.sum(self.lattice, dtype=int)
 
-                # if (live_cells[step] == live_cells[step-1]) and (live_cells[step-1] == live_cells[step-2]):
-                #     print("\nEquilibrium reached at step {}!".format(step))
-                #     break
+                if self.mode == "random":
+                    if (self.live_cells[step] == self.live_cells[step-1]) and (self.live_cells[step-1] == self.live_cells[step-2]):
+                        print("\nEquilibrium reached at step {}!".format(step))
+                        break
 
-            print("Max displacement: {}".format(np.amax(disp)))
-            print("Mean displacement: {}".format(np.mean(self.remove_outliers(disp[:step]))))
+            if self.mode == "glider":
+                print("\n")
+                print("Max displacement: {}".format(np.amax(self.disp)))
+                print("Mean displacement: {}".format(np.mean(self.remove_outliers(self.disp[:step]))))
 
             return(step)
 
     def exportAnimation(self, filename, dotsPerInch):
         """
-            Exports the animation to a .gif file without compression. (Linux
-            distributions with package "imagemagick" only. Files can be large!)
-            # TODO: rename this for PEP8 compliance and add support for other
-            image writing packages.
+        Exports the animation to a .gif file without compression. (Linux
+        distributions with package "imagemagick" only. Files can be large!)
+        # TODO: rename this for PEP8 compliance and add support for other
+        image writing packages.
         """
         self.animation.save(filename, dpi=dotsPerInch, writer="imagemagick")
