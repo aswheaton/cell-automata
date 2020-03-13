@@ -1,5 +1,6 @@
 import numpy as np
-
+# Size of the lattice.
+n, m = 50, 50
 # Initialise immunity domain.
 immune_fracs = np.arange(0.0, 1.0, 0.01)
 # Fix probability domain.
@@ -24,4 +25,4 @@ for immune_frac in immune_fracs:
 
 # Write out the infected fraction and errors.
 immune_frac_data = np.stack((immune_fracs, inf_frac, inf_frac_err), axis=-1)
-np.savetxt("data/immunity/immune_frac.csv", immune_frac_data, delimiter=" ")
+np.savetxt("data/immunity/inf_frac_immune_frac.csv", immune_frac_data, delimiter=" ")
