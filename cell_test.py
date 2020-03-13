@@ -1,3 +1,5 @@
+#! usr/bin/env/python3
+
 import sys
 import numpy as np
 import time
@@ -29,7 +31,10 @@ if sys.argv[5] == "animate":
         simulation.run(dynamic=dynamic, animate=True, max_iter=1000)
 
     if dynamic == "SIRS":
-        p1, p2, p3 = 0.8, 0.1, 0.01
+        try:
+            p1, p2, p3 = sys.argv[6], sys.argv[7], sys.argv[8]
+        except IndexError:
+            p1, p2, p3 = 0.8, 0.1, 0.01
         simulation = SIRS_Lattice(size=(n,m), mode=mode,dynamic=dynamic,
                                   animate=True, max_iter=1000,p1=p1, p2=p2,
                                   p3=p3)

@@ -91,16 +91,16 @@ class Cellular_Lattice(object):
         return((x_avg, y_avg))
 
     def get_displacement(self, indices_a, indices_b):
-        displacement = ((indices_b[0]-indices_a[0])**2 +
-                        (indices_b[1]-indices_a[1])**2
-                        )**0.5
+        x1, y1 = indices_a
+        x2, y2 = indices_b
+        displacement = np.sqrt((x2-x1)**2 + (y2-y1)**2)
         return(displacement)
 
     def remove_outliers(self, data):
         """
         Removes data falling outside two standard deviation of a dataset.
         """
-        return data[abs(data - np.mean(data)) < 2 * np.std(data)]
+        return data[np.where(abs(data - np.mean(data)) < np.std(data))]
 
     def step(self, *args):
         """
@@ -136,7 +136,7 @@ class Cellular_Lattice(object):
             self.animation = animation.FuncAnimation(self.figure, self.step,
                                                     frames=self.max_iter,
                                                     repeat=False,
-                                                    interval=50, blit=False
+                                                    interval=500, blit=False
                                                     )
             plt.show()
 
@@ -148,13 +148,13 @@ class Cellular_Lattice(object):
 
             self.com[0,:] = self.weighted_mean_2D()
 
-            for step in range(self.max_iter):
+            for step in range(1, self.max_iter):
 
                 print("Step {} of {}".format(step, self.max_iter), end="\r"),
                 self.step()
 
                 self.com[step,:] = self.weighted_mean_2D()
-                self.disp[step] = self.get_displacement(self.com[step-1,:], self.com[step,:])
+                self.disp[step] = self.get_displacement(self.com[step-4,:], self.com[step,:]) / 4.0
                 self.live_cells[step] = np.sum(self.lattice, dtype=int)
 
                 if self.mode == "random":
@@ -163,9 +163,15 @@ class Cellular_Lattice(object):
                         break
 
             if self.mode == "glider":
-                print()
-                print("Max displacement: {}".format(np.amax(self.disp)))
+                print("\nMax displacement: {}".format(np.amax(self.disp)))
                 print("Mean displacement: {}".format(np.mean(self.remove_outliers(self.disp[:step]))))
+
+                plt.plot(range(len(self.disp)), self.disp)
+                plt.xlabel("n steps")
+                plt.ylabel("COM_n - COM_{n-4}")
+                plt.title("Displacement (COM_n - COM_{n-4})")
+                plt.savefig("plots/glider_displacement.png")
+                plt.show()
 
             return(step)
 
