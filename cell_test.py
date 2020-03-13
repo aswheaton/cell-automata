@@ -89,7 +89,7 @@ if sys.argv[5] == "phase":
 
     # Write out the matrices.
     np.savetxt("data/phase/phase_matrix.csv", phase_matrix, delimiter=" ")
-    np.savetxt("data/phase/var_matrix.csv", var_matrix, delimiter=" ")
+    np.savetxt("data/phase/phase_variance_matrix.csv", var_matrix, delimiter=" ")
     # Plot the phase diagram.
     plt.pcolormesh(p1s, p3s, phase_matrix.T,  cmap='viridis')
     plt.colorbar()
@@ -178,12 +178,15 @@ if sys.argv[5] == "immunity":
             # Collect the average infected fraction for this run.
             avg_inf_fracs.append(np.mean(psis)/(n*m))
             # Write out the arrays.
-            np.savetxt("data/immunity/tot_inf_frac={}_sim{}.csv".format(immune_frac,sim), inf_frac, delimiter=" ")
+            np.savetxt("data/immunity/psis_frac={}_sim{}.csv".format(immune_frac,sim), psis, delimiter=" ")
         # Get a mean and standard error for plotting.
         index = np.where(immune_fracs == immune_frac)
         inf_frac[index] = np.mean(avg_inf_fracs)
         inf_frac_err[index] = np.std(avg_inf_fracs) / len(avg_inf_fracs)**0.5
 
+    # Write out the infected fracion vs. immune fraction data with error.
+    immune_frac_data = np.stack((immune_fracs, inf_frac, inf_frac_err), axis=-1)
+    np.savetxt("data/immunity/inf_frac_immune_frac.csv", immune_frac_data, delimiter=" ")
     # Plot slice in phase space with errors.
     plt.errorbar(immune_fracs, inf_frac, yerr=inf_frac_err, elinewidth=1, capsize=3, barsabove=True)
     plt.xlabel("Immunity Fraction")
@@ -193,7 +196,7 @@ if sys.argv[5] == "immunity":
     plt.clf()
     # Write out the infected fraction and errors.
     immune_frac_data = np.stack((immune_fracs, inf_frac, inf_frac_err), axis=-1)
-    np.savetxt("data/immunity/immune_frac.csv", immune_frac_data, delimiter=" ")
+    np.savetxt("data/immunity/inf_frac_immune_frac.csv", immune_frac_data, delimiter=" ")
 
 toc = time.clock()
 print("Executed script in {} seconds.".format(toc-tic))
